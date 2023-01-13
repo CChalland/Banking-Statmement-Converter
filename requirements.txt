@@ -1,0 +1,7 @@
+requests==2.25.1
+pandas==1.1.5
+python-decouple
+python_dateutil==2.8.1
+
+tabula-py
+pdfminer.six

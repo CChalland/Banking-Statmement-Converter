@@ -42,26 +42,6 @@ class LineConverter(PDFPageAggregator):
         return list(self.result.values())
 
 
-class Parser:
-    def __init__(self):
-        self.data = []
-        self.csv = []
-    
-    def pdf_lines(self, file_name):
-        with open(file_name, 'rb') as fp:
-            resourceManager = PDFResourceManager()
-            device = LineConverter(resourceManager, laparams=LAParams())
-            interpreter = PDFPageInterpreter(resourceManager, device)
-            
-            for page in PDFPage.get_pages(fp):
-                interpreter.process_page(page)
-                self.data.extend(device.get_results())
-    
-    def _translate_to_csv(self):
-        for row in self.data:
-            print(row)
-
-
 
 def pdf_to_lines(file_name):
     data = []
@@ -103,6 +83,8 @@ def apple_filter_rows(lines):
     
     return data
 
+
+
 def convert_pdf(file_name):
     card_provider = file_name.split('/')[1]
     lines = pdf_to_lines(file_name)
@@ -111,6 +93,7 @@ def convert_pdf(file_name):
         return apple_filter_rows(lines)
     elif card_provider == 'Chase':
         return chase_filter_rows(lines)
+
 
 
 

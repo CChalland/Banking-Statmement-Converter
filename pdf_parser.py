@@ -48,14 +48,14 @@ def pdf_to_lines(file_name):
 
     with open(file_name, 'rb') as fp:
         rsrcmgr = PDFResourceManager()
-        device = LineConverter(rsrcmgr, laparams=LAParams())
+        device = LineConverter(rsrcmgr, laparams=LAParams(boxes_flow=-0.5))
         interpreter = PDFPageInterpreter(rsrcmgr, device)
 
         for page in PDFPage.get_pages(fp):
             interpreter.process_page(page)
             data.extend(device.get_result())
 
-    # print(data)
+    # print("data: ", data, "\n\n\n\n")
     return data
 
 

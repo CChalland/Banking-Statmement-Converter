@@ -81,6 +81,9 @@ def chase_filter_rows(lines):
 def apple_filter_rows(lines):
     data = []
     
+    for row in lines:
+        print(row)
+    
     return data
 
 

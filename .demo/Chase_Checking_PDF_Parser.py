@@ -69,6 +69,7 @@ def pdf_to_lines(file_name):
             interpreter.process_page(page)
             data.extend(device.get_result())
 
+    print(data)
     return data
 
 

@@ -20,6 +20,7 @@ class LineConverter(PDFPageAggregator):
 
     def receive_layout(self, ltpage):
         lines = {}
+
         def render(item):
             if isinstance(item, (LTPage, LTTextBox)):
                 for child in item:
@@ -35,6 +36,7 @@ class LineConverter(PDFPageAggregator):
                 for child in item:
                     render(child)
             return
+
         render(ltpage)
         self.result = lines
 
@@ -43,7 +45,6 @@ class LineConverter(PDFPageAggregator):
 
     def get_results(self):
         return self.result
-
 
 
 def pdf_to_data(file_name):
@@ -90,21 +91,27 @@ def apple_filter_rows(data):
     for key, row in data.items():
         if any(x in stop_points for x in row):
             cursorOn = False
-        
+
         elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
             trans_type = row[0]
-            
-        elif row == ["Date", "Description", "Amount"] or row == ["Date", "Description", "Daily Cash", "Amount"] or row == ["Dates", "Description", "Daily Cash", "Amounts"]:
+
+        elif any(x in ["Description", "Total remaining"] for x in row):
             cursorOn = True
-            
-        elif cursorOn and 2 < len(row) < 4:
-            date, desc, amount = row
+
+        elif cursorOn:
+            if 2 < len(row) < 4:
+                date, desc, amount = row
+                
+
+            elif 4 < len(row) < 6:
+                for idx, item in enumerate(row):
+                    if len(item) == 10:
+                        date = item
+                
+                # date, desc, precentage, cash, amount = row
+
             rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
-            
-        elif cursorOn and 4 < len(row) < 6:
-            date, desc, precentage, cash, amount = row
-            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
-    
+
     return rows
 
 
@@ -152,7 +159,7 @@ if __name__ == "__main__":
         print("fname: ", file)
         data = convert_pdf(file)
         print("Parsed {} rows from file: {}".format(len(data), file))
-        print("\n\nrow data: ", data)
+        print("row data: ", data, "\n\n")
         all_pdf_data.extend(data)
 
     # print("\n\n\n\nALL DATA: ", all_pdf_data)

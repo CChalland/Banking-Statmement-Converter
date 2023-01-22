@@ -46,41 +46,6 @@ class LineConverter(PDFPageAggregator):
 
 
 
-def pdf_to_lines(file_name):
-    lines = []
-    with open(file_name, "rb") as fp:
-        rsrcmgr = PDFResourceManager()
-        device = LineConverter(rsrcmgr, laparams=LAParams(boxes_flow=-0.5))
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-
-        for page in PDFPage.get_pages(fp):
-            interpreter.process_page(page)
-            lines.extend(device.get_lines())
-
-    # print("lines: ", lines, "\n\n\n\n")
-    return lines
-
-
-def chase_filter_rows(lines):
-    rows = []
-    trans_type = ""
-    cursorOn = False
-
-    for row in lines:
-        if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
-            cursorOn = False
-        elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
-            trans_type = row[0]
-            cursorOn = True
-        elif cursorOn and 2 < len(row) < 4:
-            # print("row type: ", trans_type)
-            # print(row, "\n")
-            date, desc, amount = row
-            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
-
-    return rows
-
-
 def pdf_to_data(file_name):
     data = {}
     with open(file_name, "rb") as fp:
@@ -91,16 +56,17 @@ def pdf_to_data(file_name):
         for page in PDFPage.get_pages(fp):
             interpreter.process_page(page)
             data.update(device.get_results())
+    # print("data = ", data)
 
     return data
 
 
-def chase_filter_rows(lines):
+def chase_filter_rows(data):
     rows = []
     trans_type = ""
     cursorOn = False
-    
-    for row in lines:
+
+    for key, row in data.items():
         if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
             cursorOn = False
         elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
@@ -114,23 +80,34 @@ def chase_filter_rows(lines):
 
     return rows
 
-def apple_filter_rows(lines):
-    data = []
 
-    # for row in lines:
-    #     print(row)
+def apple_filter_rows(data):
+    rows = []
+    trans_type = ""
 
-    return data
+    for key, row in data.items():
+        if row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
+            trans_type = row[0]
+        elif row == ["Date", "Description", "Amount"] or row == ["Date", "Description", "Daily Cash", "Amount"]:
+            headers = row
+        elif 2 < len(row) < 4:
+            date, desc, amount = row
+        
+        elif 4 < len(row) < 6:
+            date, desc, precentage, cash, amount = row
+    
+    
+    return rows
 
 
 def convert_pdf(file_name):
     card_provider = file_name.split("/")[1]
-    lines = pdf_to_lines(file_name)
+    data = pdf_to_data(file_name)
 
     if card_provider == "Apple":
-        return apple_filter_rows(lines)
+        return apple_filter_rows(data)
     elif card_provider == "Chase":
-        return chase_filter_rows(lines)
+        return chase_filter_rows(data)
 
 
 if __name__ == "__main__":
@@ -167,7 +144,7 @@ if __name__ == "__main__":
         print("fname: ", file)
         data = convert_pdf(file)
         print("Parsed {} rows from file: {}".format(len(data), file))
-        # print("\n\nrow data: ", data)
+        print("\n\nrow data: ", data)
         all_pdf_data.extend(data)
 
     # print("\n\n\n\nALL DATA: ", all_pdf_data)

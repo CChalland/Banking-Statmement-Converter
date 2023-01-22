@@ -84,18 +84,26 @@ def chase_filter_rows(data):
 def apple_filter_rows(data):
     rows = []
     trans_type = ""
+    cursorOn = False
+    stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
 
     for key, row in data.items():
-        if row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
-            trans_type = row[0]
-        elif row == ["Date", "Description", "Amount"] or row == ["Date", "Description", "Daily Cash", "Amount"]:
-            headers = row
-        elif 2 < len(row) < 4:
-            date, desc, amount = row
+        if any(x in stop_points for x in row):
+            cursorOn = False
         
-        elif 4 < len(row) < 6:
+        elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
+            trans_type = row[0]
+            
+        elif row == ["Date", "Description", "Amount"] or row == ["Date", "Description", "Daily Cash", "Amount"] or row == ["Dates", "Description", "Daily Cash", "Amounts"]:
+            cursorOn = True
+            
+        elif cursorOn and 2 < len(row) < 4:
+            date, desc, amount = row
+            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+            
+        elif cursorOn and 4 < len(row) < 6:
             date, desc, precentage, cash, amount = row
-    
+            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
     
     return rows
 

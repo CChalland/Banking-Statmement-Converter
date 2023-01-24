@@ -99,18 +99,18 @@ def apple_filter_rows(data):
             cursorOn = True
 
         elif cursorOn:
-            if 2 < len(row) < 4:
+            if 2 < len(row) < 4 and len(row[0]) == 10:
                 date, desc, amount = row
-                
+                rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif 4 < len(row) < 6:
-                for idx, item in enumerate(row):
-                    if len(item) == 10:
-                        date = item
-                
-                # date, desc, precentage, cash, amount = row
+                if "%" in row[0]:
+                    precentage, cash, date, desc, amount = row
+                    rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
-            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                elif len(row[0]) == 10:
+                    date, desc, precentage, cash, amount = row
+                    rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
     return rows
 

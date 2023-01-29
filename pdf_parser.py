@@ -109,17 +109,17 @@ def apple_filter_rows(data):
                 else:
                     date, desc, amount = row
                     rows[key] = [date, desc, amount]
-                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                    # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif 4 < len(row) < 6:
                 if "%" in row[0]:
                     precentage, cash, date, desc, amount = row
                     rows[key] = [date, desc, precentage, cash, amount]
-                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                    # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
                 elif len(row[0]) == 10:
                     date, desc, precentage, cash, amount = row
                     rows[key] = [date, desc, precentage, cash, amount]
-                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                    # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif "TRANSACTION #" in row[0]:
                 stmt_state = True

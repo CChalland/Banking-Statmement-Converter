@@ -62,7 +62,7 @@ def pdf_to_data(file_name):
 
 
 def chase_filter_rows(data):
-    csv_rows = []
+    # csv_rows = []
     rows = dict()
     trans_type = ""
     cursorOn = False

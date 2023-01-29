@@ -85,11 +85,11 @@ def chase_filter_rows(data):
 def apple_filter_rows(data):
     rows = dict()
     csv_rows = []
-    statements = []
     statement = []
+    stmt_idx = 0
     stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
     cursorOn = False
-    stms_state = False
+    stmt_state = False
     trans_type = ""
 
     for key, row in data.items():
@@ -101,14 +101,11 @@ def apple_filter_rows(data):
         elif any(x in ["Description", "Total remaining"] for x in row):
             cursorOn = True
 
-
         elif cursorOn:
-            rows[key] = row
-
             if 2 < len(row) < 4 and len(row[0]) == 10:
                 if trans_type == "Statement":
                     date, desc, amount = row
-                    statements.append([key, date, desc, amount])
+                    rows[key] = [date, desc, amount]
                 else:
                     date, desc, amount = row
                     rows[key] = [date, desc, amount]
@@ -119,31 +116,30 @@ def apple_filter_rows(data):
                     precentage, cash, date, desc, amount = row
                     rows[key] = [date, desc, precentage, cash, amount]
                     csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
-
                 elif len(row[0]) == 10:
                     date, desc, precentage, cash, amount = row
                     rows[key] = [date, desc, precentage, cash, amount]
                     csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
-
             elif "TRANSACTION #" in row[0]:
-                stms_state = True
-                print(statements)
-                # statement = statements.pop(0)
-                # statement[2] = row[0]
-
-            elif stms_state:
-                amount = row[0].split(': ')[1]
-                # statement[3] = amount
+                stmt_state = True
+                stmt_idx = (key[0], key[1] + 10)
+                # print(stmt_idx)
+                statement = rows[stmt_idx]
+                statement[1] = row[0]
 
             elif "Final installment" in row[0]:
-                stms_state = False
-                # statement[2] += " " + row[0]
-                # rows[statement[0]] = [statement[1], statement[2], statement[3]]
-
+                stmt_state = False
+                statement[1] += " " + row[0]
+                rows[stmt_idx] = statement
+            
+            elif stmt_state:
+                amount = row[0].split(': ')[1]
+                statement[2] = amount
 
     # print(rows, "\n")
-    return csv_rows
+    # return csv_rows
+    return rows
 
 
 
@@ -192,7 +188,7 @@ if __name__ == "__main__":
         print("fname: ", file)
         data = convert_pdf(file)
         # print("Parsed {} rows from file: {}".format(len(data), file))
-        # print(data, "\n\n")
+        print(data, "\n\n")
         all_pdf_data.extend(data)
 
     # print("\n\n\n\nALL DATA: ", all_pdf_data)

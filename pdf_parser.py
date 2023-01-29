@@ -95,20 +95,23 @@ def apple_filter_rows(data):
         # print(key, row)
         if any(x in stop_points for x in row):
             cursorOn = False
-
         elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
             trans_type = row[0]
-
         elif any(x in ["Description", "Total remaining"] for x in row):
             cursorOn = True
+
 
         elif cursorOn:
             rows[key] = row
 
             if 2 < len(row) < 4 and len(row[0]) == 10:
-                date, desc, amount = row
-                rows[key] = [date, desc, amount]
-                csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                if trans_type == "Statement":
+                    date, desc, amount = row
+                    rows[key] = [date, desc, amount]
+                else:
+                    date, desc, amount = row
+                    rows[key] = [date, desc, amount]
+                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif 4 < len(row) < 6:
                 if "%" in row[0]:
@@ -124,14 +127,14 @@ def apple_filter_rows(data):
 
             elif "TRANSACTION #" in row[0]:
                 stms_state = True
-                print(row)
+                print(key, row)
 
             elif stms_state:
-                print(row)
+                print(key, row)
 
             elif "Final installment" in row[0]:
                 stms_state = False
-                print(row)
+                print(key, row)
 
 
     # print(rows, "\n")
@@ -184,7 +187,8 @@ if __name__ == "__main__":
         print("fname: ", file)
         data = convert_pdf(file)
         # print("Parsed {} rows from file: {}".format(len(data), file))
-        print(data, "\n\n")
+        # print(data, "\n\n")
         all_pdf_data.extend(data)
 
     # print("\n\n\n\nALL DATA: ", all_pdf_data)
+

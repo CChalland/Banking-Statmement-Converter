@@ -47,19 +47,6 @@ class LineConverter(PDFPageAggregator):
         return self.result
 
 
-def pdf_to_data(file_name):
-    data = {}
-    with open(file_name, "rb") as fp:
-        rsrcmgr = PDFResourceManager()
-        device = LineConverter(rsrcmgr, laparams=LAParams(boxes_flow=-0.5))
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-
-        for page in PDFPage.get_pages(fp):
-            interpreter.process_page(page)
-            data.update(device.get_results())
-
-    return data
-
 
 def chase_filter_rows(data):
     # csv_rows = []
@@ -80,7 +67,6 @@ def chase_filter_rows(data):
 
     # return csv_rows
     return rows
-
 
 
 def apple_filter_rows(data):
@@ -140,16 +126,27 @@ def apple_filter_rows(data):
     return rows
 
 
-
-
-def convert_pdf(file_name):
+def pdf_to_data(file_name):
+    data = {}
     card_provider = file_name.split("/")[1]
-    data = pdf_to_data(file_name)
+    
+    with open(file_name, "rb") as fp:
+        rsrcmgr = PDFResourceManager()
+        device = LineConverter(rsrcmgr, laparams=LAParams(boxes_flow=-0.5))
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+
+        for page in PDFPage.get_pages(fp):
+            interpreter.process_page(page)
+            data.update(device.get_results())
 
     if card_provider == "Apple":
         return apple_filter_rows(data)
     elif card_provider == "Chase":
         return chase_filter_rows(data)
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -184,7 +181,7 @@ if __name__ == "__main__":
     num_rows = 0
     for file in input_files:
         print("fname: ", file)
-        data = convert_pdf(file)
+        data = pdf_to_data(file)
         # print("Parsed {} rows from file: {}".format(len(data), file))
         print(data, "\n\n")
         all_pdf_data.extend(data)

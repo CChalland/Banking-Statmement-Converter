@@ -130,7 +130,7 @@ def apple_filter_rows(data):
 
             elif "Final installment" in row[0]:
                 stmt_state = False
-                statement[1] += " " + row[0]
+                statement[1] += ", " + row[0]
                 rows[stmt_idx] = statement
             
             elif stmt_state:

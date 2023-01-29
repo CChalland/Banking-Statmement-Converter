@@ -83,13 +83,14 @@ def chase_filter_rows(data):
 
 
 def apple_filter_rows(data):
-    # stms_idx = 0
     rows = dict()
     csv_rows = []
-    trans_type = ""
+    statements = []
+    statement = []
+    stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
     cursorOn = False
     stms_state = False
-    stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
+    trans_type = ""
 
     for key, row in data.items():
         # print(key, row)
@@ -107,7 +108,7 @@ def apple_filter_rows(data):
             if 2 < len(row) < 4 and len(row[0]) == 10:
                 if trans_type == "Statement":
                     date, desc, amount = row
-                    rows[key] = [date, desc, amount]
+                    statements.append([key, date, desc, amount])
                 else:
                     date, desc, amount = row
                     rows[key] = [date, desc, amount]
@@ -127,14 +128,18 @@ def apple_filter_rows(data):
 
             elif "TRANSACTION #" in row[0]:
                 stms_state = True
-                print(key, row)
+                print(statements)
+                # statement = statements.pop(0)
+                # statement[2] = row[0]
 
             elif stms_state:
-                print(key, row)
+                amount = row[0].split(': ')[1]
+                # statement[3] = amount
 
             elif "Final installment" in row[0]:
                 stms_state = False
-                print(key, row)
+                # statement[2] += " " + row[0]
+                # rows[statement[0]] = [statement[1], statement[2], statement[3]]
 
 
     # print(rows, "\n")

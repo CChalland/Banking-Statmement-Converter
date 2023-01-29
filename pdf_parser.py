@@ -83,12 +83,16 @@ def chase_filter_rows(data):
 
 
 def apple_filter_rows(data):
-    rows = []
+    # stms_idx = 0
+    rows = dict()
+    csv_rows = []
     trans_type = ""
     cursorOn = False
+    stms_state = False
     stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
 
     for key, row in data.items():
+        # print(key, row)
         if any(x in stop_points for x in row):
             cursorOn = False
 
@@ -99,20 +103,41 @@ def apple_filter_rows(data):
             cursorOn = True
 
         elif cursorOn:
+            rows[key] = row
+
             if 2 < len(row) < 4 and len(row[0]) == 10:
                 date, desc, amount = row
-                rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                rows[key] = [date, desc, amount]
+                csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif 4 < len(row) < 6:
                 if "%" in row[0]:
                     precentage, cash, date, desc, amount = row
-                    rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                    rows[key] = [date, desc, precentage, cash, amount]
+                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
                 elif len(row[0]) == 10:
                     date, desc, precentage, cash, amount = row
-                    rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                    rows[key] = [date, desc, precentage, cash, amount]
+                    csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
-    return rows
+
+            elif "TRANSACTION #" in row[0]:
+                stms_state = True
+                print(row)
+
+            elif stms_state:
+                print(row)
+
+            elif "Final installment" in row[0]:
+                stms_state = False
+                print(row)
+
+
+    # print(rows, "\n")
+    return csv_rows
+
+
 
 
 def convert_pdf(file_name):
@@ -158,8 +183,8 @@ if __name__ == "__main__":
     for file in input_files:
         print("fname: ", file)
         data = convert_pdf(file)
-        print("Parsed {} rows from file: {}".format(len(data), file))
-        print("row data: ", data, "\n\n")
+        # print("Parsed {} rows from file: {}".format(len(data), file))
+        print(data, "\n\n")
         all_pdf_data.extend(data)
 
     # print("\n\n\n\nALL DATA: ", all_pdf_data)

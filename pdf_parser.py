@@ -57,13 +57,13 @@ def pdf_to_data(file_name):
         for page in PDFPage.get_pages(fp):
             interpreter.process_page(page)
             data.update(device.get_results())
-    # print("data = ", data)
 
     return data
 
 
 def chase_filter_rows(data):
-    rows = []
+    csv_rows = []
+    rows = dict()
     trans_type = ""
     cursorOn = False
 
@@ -74,17 +74,18 @@ def chase_filter_rows(data):
             trans_type = row[0]
             cursorOn = True
         elif cursorOn and 2 < len(row) < 4:
-            # print("row type: ", trans_type)
-            # print(row, "\n")
             date, desc, amount = row
-            rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+            rows[key] = [date, desc, amount, trans_type]
+            # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
+    # return csv_rows
     return rows
 
 
+
 def apple_filter_rows(data):
+    # csv_rows = []
     rows = dict()
-    csv_rows = []
     statement = []
     stmt_idx = 0
     stop_points = ["Total payments for this period", "Apple Card is issued by Goldman Sachs Bank USA, Salt Lake City Branch.", "Total Daily Cash this month", "Total financed"]
@@ -93,7 +94,6 @@ def apple_filter_rows(data):
     trans_type = ""
 
     for key, row in data.items():
-        # print(key, row)
         if any(x in stop_points for x in row):
             cursorOn = False
         elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
@@ -105,26 +105,25 @@ def apple_filter_rows(data):
             if 2 < len(row) < 4 and len(row[0]) == 10:
                 if trans_type == "Statement":
                     date, desc, amount = row
-                    rows[key] = [date, desc, amount]
+                    rows[key] = [date, desc, amount, trans_type]
                 else:
                     date, desc, amount = row
-                    rows[key] = [date, desc, amount]
+                    rows[key] = [date, desc, amount, trans_type]
                     # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif 4 < len(row) < 6:
                 if "%" in row[0]:
                     precentage, cash, date, desc, amount = row
-                    rows[key] = [date, desc, precentage, cash, amount]
+                    rows[key] = [date, desc, precentage, cash, amount, trans_type]
                     # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
                 elif len(row[0]) == 10:
                     date, desc, precentage, cash, amount = row
-                    rows[key] = [date, desc, precentage, cash, amount]
+                    rows[key] = [date, desc, precentage, cash, amount, trans_type]
                     # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
 
             elif "TRANSACTION #" in row[0]:
                 stmt_state = True
                 stmt_idx = (key[0], key[1] + 10)
-                # print(stmt_idx)
                 statement = rows[stmt_idx]
                 statement[1] = row[0]
 
@@ -137,7 +136,6 @@ def apple_filter_rows(data):
                 amount = row[0].split(': ')[1]
                 statement[2] = amount
 
-    # print(rows, "\n")
     # return csv_rows
     return rows
 

@@ -39,3 +39,4 @@ if __name__ == "__main__":
         data = statements.data_from_file(file)
         all_pdf_data.extend(data)
     print("\n\n\n\nALL DATA: ", all_pdf_data)
+

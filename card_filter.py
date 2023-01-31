@@ -5,9 +5,9 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
 from pdf_parser import LineConverter
+from utils import *
+import gvars
 
-CSV_DATE_FORMAT = "%m/%d/%Y"
-CSV_HEADERS = ["Type", "Transaction Date", "Description", "Amount"]
 
 class StatementFilter:
     def __init__(self):
@@ -94,7 +94,7 @@ class StatementFilter:
 
     def data_from_file(self, filename):
         raw_data = {}
-        card_provider = filename.split("/")[1]
+        card_provider = list(set(filename.split("/")).intersection(set(gvars.PROVIDERS)))[0]
         
         with open(filename, "rb") as fp:
             rsrcmgr = PDFResourceManager()
@@ -140,4 +140,4 @@ if __name__ == "__main__":
         print(data, "\n\n")
         all_pdf_data.extend(data)
 
-    # print("\n\n\n\nALL DATA: ", all_pdf_data)
+    print("\n\n\n\nALL DATA: ", all_pdf_data)

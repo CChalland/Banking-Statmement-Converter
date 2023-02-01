@@ -11,28 +11,11 @@ import gvars
 
 class StatementFilter:
     def __init__(self):
-        self.results = dict()
+        self.results = []
 
 
-    def _chase_rows(self, data):
-        # csv_rows = []
-        rows = dict()
-        trans_type = ""
-        cursorOn = False
-
-        for key, row in data.items():
-            if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
-                cursorOn = False
-            elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
-                trans_type = row[0]
-                cursorOn = True
-            elif cursorOn and 2 < len(row) < 4:
-                date, desc, amount = row
-                rows[key] = [date, desc, amount, trans_type]
-                # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
-
-        # return csv_rows
-        return rows
+    def _clean_data(self, data):
+        return data
 
 
     def _apple_rows(self, data):
@@ -92,6 +75,27 @@ class StatementFilter:
         return rows
 
 
+    def _chase_rows(self, data):
+        # csv_rows = []
+        rows = dict()
+        trans_type = ""
+        cursorOn = False
+
+        for key, row in data.items():
+            if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
+                cursorOn = False
+            elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
+                trans_type = row[0]
+                cursorOn = True
+            elif cursorOn and 2 < len(row) < 4:
+                date, desc, amount = row
+                rows[key] = [date, desc, amount, trans_type]
+                # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+
+        # return csv_rows
+        return rows
+
+
     def data_from_file(self, filename):
         raw_data = {}
         card_provider = list(set(filename.split("/")).intersection(set(gvars.PROVIDERS)))[0]
@@ -106,10 +110,10 @@ class StatementFilter:
                 raw_data.update(device.get_results())
 
         if card_provider == "Apple":
-            # self.results.update(self._apple_rows(raw_data))
+            self.results.append(self._apple_rows(raw_data))
             return self._apple_rows(raw_data)
         elif card_provider == "Chase":
-            # self.results.update(self._chase_rows(raw_data))
+            self.results.append(self._chase_rows(raw_data))
             return self._chase_rows(raw_data)
 
 
@@ -122,7 +126,6 @@ class StatementFilter:
 
 if __name__ == "__main__":
     input_files = []
-    all_pdf_data = []
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", default=".", help="The directory to scan pdfs from")
     args = parser.parse_args()
@@ -138,6 +141,5 @@ if __name__ == "__main__":
         print("fname: ", file)
         data = statements.data_from_file(file)
         print(data, "\n\n")
-        all_pdf_data.extend(data)
 
-    print("\n\n\n\nALL DATA: ", all_pdf_data)
+    print("\n\n\n\nALL DATA: ", statements.results)

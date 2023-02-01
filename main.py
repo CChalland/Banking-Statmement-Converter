@@ -22,7 +22,6 @@ if __name__ == "__main__":
     #     print("\n\nrow data: ", data)
     
     input_files = []
-    all_pdf_data = []
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", default=".", help="The directory to scan pdfs from")
     args = parser.parse_args()
@@ -37,6 +36,6 @@ if __name__ == "__main__":
     for file in input_files:
         print("fname: ", file)
         data = statements.data_from_file(file)
-        all_pdf_data.extend(data)
-    print("\n\n\n\nALL DATA: ", all_pdf_data)
+        
+    print("\n\n\n\nALL DATA: ", statements.results)
 

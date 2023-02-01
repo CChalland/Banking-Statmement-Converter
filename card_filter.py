@@ -14,12 +14,8 @@ class StatementFilter:
         self.results = []
 
 
-    def _clean_data(self, data):
-        return data
-
 
     def _apple_rows(self, data):
-        # csv_rows = []
         rows = dict()
         statement = []
         stmt_idx = 0
@@ -40,21 +36,21 @@ class StatementFilter:
                 if 2 < len(row) < 4 and len(row[0]) == 10:
                     if trans_type == "Statement":
                         date, desc, amount = row
-                        rows[key] = [date, desc, amount, trans_type]
+                        rows[key] = [date, desc, amount, "Apple", trans_type]
                     else:
                         date, desc, amount = row
-                        rows[key] = [date, desc, amount, trans_type]
-                        # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                        rows[key] = [date, desc, amount, "Apple", trans_type]
+                        self.results.append(dict(zip(gvars.CSV_HEADERS, [date, desc, amount, "Apple", trans_type])))
 
                 elif 4 < len(row) < 6:
                     if "%" in row[0]:
                         precentage, cash, date, desc, amount = row
-                        rows[key] = [date, desc, precentage, cash, amount, trans_type]
-                        # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                        rows[key] = [date, desc, precentage, cash, amount, "Apple", trans_type]
+                        self.results.append(dict(zip(gvars.CSV_HEADERS, [date, desc, amount, "Apple", trans_type])))
                     elif len(row[0]) == 10:
                         date, desc, precentage, cash, amount = row
-                        rows[key] = [date, desc, precentage, cash, amount, trans_type]
-                        # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                        rows[key] = [date, desc, precentage, cash, amount, "Apple", trans_type]
+                        self.results.append(dict(zip(gvars.CSV_HEADERS, [date, desc, amount, "Apple", trans_type])))
 
                 elif "TRANSACTION #" in row[0]:
                     stmt_state = True
@@ -71,12 +67,10 @@ class StatementFilter:
                     amount = row[0].split(': ')[1]
                     statement[2] = amount
 
-        # return csv_rows
         return rows
 
 
     def _chase_rows(self, data):
-        # csv_rows = []
         rows = dict()
         trans_type = ""
         cursorOn = False
@@ -90,9 +84,8 @@ class StatementFilter:
             elif cursorOn and 2 < len(row) < 4:
                 date, desc, amount = row
                 rows[key] = [date, desc, amount, trans_type]
-                # csv_rows.append(dict(zip(CSV_HEADERS, [trans_type, date, desc, amount])))
+                self.results.append(dict(zip(gvars.CSV_HEADERS, [date, desc, amount, "Chase", trans_type])))
 
-        # return csv_rows
         return rows
 
 
@@ -110,16 +103,9 @@ class StatementFilter:
                 raw_data.update(device.get_results())
 
         if card_provider == "Apple":
-            self.results.append(self._apple_rows(raw_data))
             return self._apple_rows(raw_data)
         elif card_provider == "Chase":
-            self.results.append(self._chase_rows(raw_data))
             return self._chase_rows(raw_data)
-
-
-    def get_data(self):
-        return self.results
-
 
 
 

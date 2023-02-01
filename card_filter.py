@@ -14,7 +14,6 @@ class StatementFilter:
         self.results = []
 
 
-
     def _apple_rows(self, data):
         rows = dict()
         statement = []
@@ -70,7 +69,7 @@ class StatementFilter:
         return rows
 
 
-    def _chase_rows(self, data):
+    def _chase_rows(self, data, year_date):
         rows = dict()
         trans_type = ""
         cursorOn = False
@@ -82,18 +81,19 @@ class StatementFilter:
                 trans_type = row[0]
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
-                date, desc, amount = row
+                raw_date, desc, amount = row
+                date = raw_date + "/" + year_date
                 rows[key] = [date, desc, amount, trans_type]
                 self.results.append(dict(zip(gvars.CSV_HEADERS, [date, desc, amount, "Chase", trans_type])))
 
         return rows
 
 
-    def data_from_file(self, filename):
+    def data_from_file(self, file):
         raw_data = {}
-        card_provider = list(set(filename.split("/")).intersection(set(gvars.PROVIDERS)))[0]
+        card_provider = list(set(file.split("/")).intersection(set(gvars.PROVIDERS)))[0]
         
-        with open(filename, "rb") as fp:
+        with open(file, "rb") as fp:
             rsrcmgr = PDFResourceManager()
             device = LineConverter(rsrcmgr, laparams=LAParams(boxes_flow=-0.5))
             interpreter = PDFPageInterpreter(rsrcmgr, device)
@@ -105,7 +105,9 @@ class StatementFilter:
         if card_provider == "Apple":
             return self._apple_rows(raw_data)
         elif card_provider == "Chase":
-            return self._chase_rows(raw_data)
+            filename = file.split("/")[-1].split(".")[0]
+            year_date = "20" + filename.split("_")[0]
+            return self._chase_rows(raw_data, year_date)
 
 
 
@@ -126,6 +128,6 @@ if __name__ == "__main__":
     for file in input_files:
         print("fname: ", file)
         data = statements.data_from_file(file)
-        print(data, "\n\n")
+        # print(data, "\n\n")
 
     print("\n\n\n\nALL DATA: ", statements.results)

@@ -32,10 +32,8 @@ if __name__ == "__main__":
             input_files.append(os.path.join(args.dir, file))
 
     statements = StatementFilter()
-
-    for file in input_files:
-        print("fname: ", file)
-        data = statements.data_from_file(file)
-        
+    data = statements.data_from_files(file)
+    
     print("\n\n\n\nALL DATA: ", statements.results)
+    
 

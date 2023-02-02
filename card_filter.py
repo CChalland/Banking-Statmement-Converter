@@ -39,17 +39,14 @@ class StatementFilter:
                     else:
                         date, desc, amount = row
                         rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
-                        # self.results.append(dict(zip(gvars.CSV_HEADERS, [string_date(date), desc, amount, "Apple", trans_type])))
 
                 elif 4 < len(row) < 6:
                     if "%" in row[0]:
                         precentage, cash, date, desc, amount = row
-                        rows[key] = [string_date(date), desc, precentage, cash, amount, "Apple", trans_type]
-                        # self.results.append(dict(zip(gvars.CSV_HEADERS, [string_date(date), desc, amount, "Apple", trans_type])))
+                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
                     elif len(row[0]) == 10:
                         date, desc, precentage, cash, amount = row
-                        rows[key] = [string_date(date), desc, precentage, cash, amount, "Apple", trans_type]
-                        # self.results.append(dict(zip(gvars.CSV_HEADERS, [string_date(date), desc, amount, "Apple", trans_type])))
+                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
 
                 elif "TRANSACTION #" in row[0]:
                     stmt_state = True
@@ -68,7 +65,6 @@ class StatementFilter:
                         statement[2] = amount
                     else:
                         statement[4] = amount
-
         return rows
 
 
@@ -86,9 +82,7 @@ class StatementFilter:
             elif cursorOn and 2 < len(row) < 4:
                 raw_date, desc, amount = row
                 date = raw_date + "/" + year_date
-                rows[key] = [string_date(date), desc, amount, trans_type]
-                # self.results.append(dict(zip(gvars.CSV_HEADERS, [string_date(date), desc, amount, "Chase", trans_type])))
-
+                rows[key] = [string_date(date), desc, amount, "Chase", trans_type]
         return rows
 
 

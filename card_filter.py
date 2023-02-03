@@ -126,6 +126,7 @@ class StatementFilter:
             print("fname: ", file)
             data = [dict(zip(gvars.CSV_HEADERS, values)) for values in self._data_praser(file).values()]
             self.results.extend(data)
+            self.results.sort(key=lambda row: row["Transaction Date"], reverse=True)
 
 
 

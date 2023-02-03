@@ -110,7 +110,7 @@ class StatementFilter:
     def data_from_files(self, file_list):
         for file in file_list:
             print("fname: ", file)
-            data = [x for x in self._data_praser(file).values()]
+            data = [dict(zip(gvars.CSV_HEADERS, values)) for values in self._data_praser(file).values()]
             self.results.extend(data)
 
 

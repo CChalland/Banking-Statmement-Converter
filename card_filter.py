@@ -1,5 +1,8 @@
 import os
 import argparse
+from re import sub
+from decimal import Decimal
+from datetime import datetime as dt
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
@@ -34,19 +37,27 @@ class StatementFilter:
             elif cursorOn:
                 if 2 < len(row) < 4 and len(row[0]) == 10:
                     if trans_type == "Statement":
-                        date, desc, amount = row
-                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
+                        date_str, desc, amount_str = row
+                        date = dt.strptime(date_str, '%m/%d/%Y').date()
+                        amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                        rows[key] = [date, desc, amount, "Apple", trans_type, date.strftime("%B"), date.year]
                     else:
-                        date, desc, amount = row
-                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
+                        date_str, desc, amount_str = row
+                        date = dt.strptime(date_str, '%m/%d/%Y').date()
+                        amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                        rows[key] = [date, desc, amount, "Apple", trans_type, date.strftime("%B"), date.year]
 
                 elif 4 < len(row) < 6:
                     if "%" in row[0]:
-                        precentage, cash, date, desc, amount = row
-                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
+                        precentage, cash, date_str, desc, amount_str = row
+                        date = dt.strptime(date_str, '%m/%d/%Y').date()
+                        amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                        rows[key] = [date, desc, amount, "Apple", trans_type, date.strftime("%B"), date.year]
                     elif len(row[0]) == 10:
-                        date, desc, precentage, cash, amount = row
-                        rows[key] = [string_date(date), desc, amount, "Apple", trans_type]
+                        date_str, desc, precentage, cash, amount_str = row
+                        date = dt.strptime(date_str, '%m/%d/%Y').date()
+                        amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                        rows[key] = [date, desc, amount, "Apple", trans_type, date.strftime("%B"), date.year]
 
                 elif "TRANSACTION #" in row[0]:
                     stmt_state = True
@@ -60,7 +71,8 @@ class StatementFilter:
                     rows[stmt_idx] = statement
                 
                 elif stmt_state:
-                    amount = row[0].split(': ')[1]
+                    amount_str = row[0].split(': ')[1]
+                    amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
                     if len(row) == 3:
                         statement[2] = amount
                     else:
@@ -80,9 +92,11 @@ class StatementFilter:
                 trans_type = row[0]
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
-                raw_date, desc, amount = row
-                date = raw_date + "/" + year_date
-                rows[key] = [string_date(date), desc, amount, "Chase", trans_type]
+                raw_date, desc, amount_str = row
+                date_str = raw_date + "/" + year_date
+                date = dt.strptime(date_str, '%m/%d/%Y').date()
+                amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                rows[key] = [date, desc, amount, "Chase", trans_type, date.strftime("%B"), date.year]
         return rows
 
 

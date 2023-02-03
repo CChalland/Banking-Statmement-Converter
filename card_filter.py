@@ -30,7 +30,7 @@ class StatementFilter:
             if any(x in stop_points for x in row):
                 cursorOn = False
             elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
-                trans_type = row[0]
+                trans_type = row[0] if row == ["Payments"] else "Transactions"
             elif any(x in ["Description", "Total remaining"] for x in row):
                 cursorOn = True
 
@@ -89,7 +89,7 @@ class StatementFilter:
             if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
                 cursorOn = False
             elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
-                trans_type = row[0]
+                trans_type = "Transactions" if row[0] == ["PAYMENTS AND OTHER CREDITS"] else "Payments"
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
                 raw_date, desc, amount_str = row

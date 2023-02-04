@@ -91,13 +91,35 @@ class StatementFilter:
             if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
                 cursorOn = False
             elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
-                trans_type = "Transactions" if row[0] == ["PAYMENTS AND OTHER CREDITS"] else "Payments"
+                trans_type = "Transactions" if row == ["PAYMENTS AND OTHER CREDITS"] else "Payments"
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
                 raw_date, desc, amount_str = row
                 date_str = raw_date + "/" + year_date
                 date = dt.strptime(date_str, '%m/%d/%Y').date()
                 amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                rows[key] = [date, desc, amount, "Chase", trans_type, date.strftime("%B"), date.year]
+        return rows
+
+
+    def _chase_checkings_savings(self, data, year_date):
+        rows = dict()
+        trans_type = ""
+        cursorOn = False
+        
+        for key, row in data.items():
+            if row == ["*end*transaction detail"]:
+                cursorOn = False
+            elif row == ["Chase Savings"] or row == ["Chase Total Checking"]:
+                trans_type = "Savings" if row == ["Chase Savings"] else "Checking"
+            elif row == ["DATE", "DESCRIPTION", "AMOUNT", "BALANCE"]:
+                cursorOn = True
+            elif cursorOn and 3 < len(row) < 5:
+                raw_date, desc, amount_str, total_str = row
+                date_str = raw_date + "/" + year_date
+                date = dt.strptime(date_str, '%m/%d/%Y').date()
+                amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
+                total = Decimal(sub(r'[^\d\-.]', '', total_str))
                 rows[key] = [date, desc, amount, "Chase", trans_type, date.strftime("%B"), date.year]
         return rows
 
@@ -119,15 +141,12 @@ class StatementFilter:
             return self._apple_rows(raw_data)
         elif card_provider == "Chase":
             account_type = file.split("/")[-2]
-            if account_type == "Credit":
-                filename = file.split("/")[-1].split(".")[0]
-                year_date = "20" + filename.split("_")[0]
-                return self._chase_rows(raw_data, year_date)
+            year_date = "20" + file.split("/")[-1].split(".")[0].split("_")[0]
             
-            elif account_type == "Checkings":
-                print("Checkings: ", raw_data)
-            elif account_type == "Savings":
-                print("Savings: ", raw_data)
+            if account_type == "Credit":
+                return self._chase_rows(raw_data, year_date)
+            elif account_type == "Checkings" or account_type == "Savings":
+                return self._chase_checkings_savings(raw_data, year_date)
 
 
     def _data_from_files(self, file_list):
@@ -143,8 +162,8 @@ class StatementFilter:
             for file in file_names:
                 if file.endswith(".pdf"):
                     self.input_files.append(os.path.join(root, file))
-        # print("The complete set of files are ", input_files)
-        # self._data_from_files(input_files)
+        # print("The complete set of files are ", self.input_files)
+        self._data_from_files(self.input_files)
 
 
 
@@ -152,10 +171,11 @@ class StatementFilter:
 if __name__ == "__main__":
     statements = StatementFilter("Statements")
     statements.crawl_directory()
+    data = statements.results
+    print("\nALL DATA: ", data)
     
+    # for file in statements.input_files:
+    #     print("file: ", file)
+    #     data = statements._data_praser(file)
+    #     print("data = ", data, "\n\n")
     
-    for file in statements.input_files:
-        statements._data_praser(file)
-    
-    # data = statements.results
-    # print("\nALL DATA: ", data)

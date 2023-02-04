@@ -13,7 +13,9 @@ import gvars
 
 
 class StatementFilter:
-    def __init__(self):
+    def __init__(self, dir):
+        self.dir = dir
+        self.input_files = []
         self.results = []
 
 
@@ -116,9 +118,16 @@ class StatementFilter:
         if card_provider == "Apple":
             return self._apple_rows(raw_data)
         elif card_provider == "Chase":
-            filename = file.split("/")[-1].split(".")[0]
-            year_date = "20" + filename.split("_")[0]
-            return self._chase_rows(raw_data, year_date)
+            account_type = file.split("/")[-2]
+            if account_type == "Credit":
+                filename = file.split("/")[-1].split(".")[0]
+                year_date = "20" + filename.split("_")[0]
+                return self._chase_rows(raw_data, year_date)
+            
+            elif account_type == "Checkings":
+                print("Checkings: ", raw_data)
+            elif account_type == "Savings":
+                print("Savings: ", raw_data)
 
 
     def _data_from_files(self, file_list):
@@ -129,21 +138,24 @@ class StatementFilter:
             self.results.sort(key=lambda row: row["Transaction Date"], reverse=True)
 
 
-    def crawl_directory(self, dir):
-        input_files = []
-        for root, dir_names, file_names in os.walk(dir):
+    def crawl_directory(self):
+        for root, dir_names, file_names in os.walk(self.dir):
             for file in file_names:
                 if file.endswith(".pdf"):
-                    input_files.append(os.path.join(root, file))
+                    self.input_files.append(os.path.join(root, file))
         # print("The complete set of files are ", input_files)
-        self._data_from_files(input_files)
+        # self._data_from_files(input_files)
 
 
 
 
 if __name__ == "__main__":
-    statements = StatementFilter()
-    statements.crawl_directory("Statements")
-    data = statements.results
+    statements = StatementFilter("Statements")
+    statements.crawl_directory()
     
-    print("\nALL DATA: ", data)
+    
+    for file in statements.input_files:
+        statements._data_praser(file)
+    
+    # data = statements.results
+    # print("\nALL DATA: ", data)

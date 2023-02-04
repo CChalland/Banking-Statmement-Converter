@@ -88,7 +88,7 @@ class StatementFilter:
             if row == ["Table Summary"] or row == ["2022 Totals Year-to-Date"]:
                 cursorOn = False
             elif row == ["PAYMENTS AND OTHER CREDITS"] or row == ["PURCHASE"]:
-                trans_type = "Transactions" if row == ["PAYMENTS AND OTHER CREDITS"] else "Payments"
+                trans_type = "Transactions" if row == ["PURCHASE"] else "Payments"
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
                 raw_date, desc, amount_str = row

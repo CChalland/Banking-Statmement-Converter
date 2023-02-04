@@ -121,7 +121,7 @@ class StatementFilter:
             return self._chase_rows(raw_data, year_date)
 
 
-    def data_from_files(self, file_list):
+    def _data_from_files(self, file_list):
         for file in file_list:
             print("fname: ", file)
             data = [dict(zip(gvars.CSV_HEADERS, values)) for values in self._data_praser(file).values()]
@@ -129,20 +129,21 @@ class StatementFilter:
             self.results.sort(key=lambda row: row["Transaction Date"], reverse=True)
 
 
+    def crawl_directory(self, dir):
+        input_files = []
+        for root, dir_names, file_names in os.walk(dir):
+            for file in file_names:
+                if file.endswith(".pdf"):
+                    input_files.append(os.path.join(root, file))
+        # print("The complete set of files are ", input_files)
+        self._data_from_files(input_files)
+
+
 
 
 if __name__ == "__main__":
-    input_files = []
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dir", default=".", help="The directory to scan pdfs from")
-    args = parser.parse_args()
-
-    print("Starting PDFs Uploads:")
-    for file in os.listdir(args.dir):
-        if file.endswith(".pdf"):
-            input_files.append(os.path.join(args.dir, file))
-
     statements = StatementFilter()
-    statements.data_from_files(input_files)
-
-    print("\n\n\n\nALL DATA: ", statements.results)
+    statements.crawl_directory("Statements")
+    data = statements.results
+    
+    print("\nALL DATA: ", data)

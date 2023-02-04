@@ -33,7 +33,7 @@ class StatementFilter:
             if any(x in stop_points for x in row):
                 cursorOn = False
             elif row == ["Payments"] or row == ["Transactions"] or row == ["Statement"]:
-                trans_type = row[0] if row == ["Payments"] else "Transactions"
+                trans_type = row[0]
             elif any(x in ["Description", "Total remaining"] for x in row):
                 cursorOn = True
 

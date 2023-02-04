@@ -75,10 +75,7 @@ class StatementFilter:
                 elif stmt_state:
                     amount_str = row[0].split(': ')[1]
                     amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                    if len(row) == 3:
-                        statement[2] = amount
-                    else:
-                        statement[4] = amount
+                    statement[2] = amount
         return rows
 
 

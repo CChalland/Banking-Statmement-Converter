@@ -13,6 +13,7 @@ class DataFrame:
         self.bill_df = self.get_bill_df()
     
     
+    
     def get_bill_df(self):
         data = []
         total_data = dict()

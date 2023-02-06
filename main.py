@@ -2,12 +2,12 @@ import os
 import argparse
 
 from card_filter import StatementFilter
+from data_frame import DataFrame
 
 
 
 if __name__ == "__main__":
     statements = StatementFilter("Statements")
-    statements.crawl_directory()
     data = statements.results
     print("\nALL DATA: ", data)
     

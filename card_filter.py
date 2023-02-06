@@ -1,5 +1,4 @@
 import os
-import argparse
 from re import sub
 from decimal import Decimal
 from datetime import datetime as dt
@@ -17,6 +16,7 @@ class StatementFilter:
         self.dir = dir
         self.input_files = []
         self.results = []
+        self.crawl_directory()
 
 
     def _apple_credit(self, data, account_type, file_date):
@@ -181,7 +181,7 @@ class StatementFilter:
 
 if __name__ == "__main__":
     statements = StatementFilter("Statements")
-    statements.crawl_directory()
+    # statements.crawl_directory()
     data = statements.results
     print("\nALL DATA: ", data)
     

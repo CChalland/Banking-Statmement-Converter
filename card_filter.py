@@ -19,7 +19,7 @@ class StatementFilter:
         self.results = []
 
 
-    def _apple_rows(self, data, account_type, file_date):
+    def _apple_credit(self, data, account_type, file_date):
         rows = dict()
         statement = []
         stmt_idx = 0
@@ -43,24 +43,24 @@ class StatementFilter:
                         date_str, desc, amount_str = row
                         date = dt.strptime(date_str, '%m/%d/%Y').date()
                         amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date]
                     else:
                         date_str, desc, amount_str = row
                         date = dt.strptime(date_str, '%m/%d/%Y').date()
                         amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date]
 
                 elif 4 < len(row) < 6:
                     if "%" in row[0]:
                         precentage, cash, date_str, desc, amount_str = row
                         date = dt.strptime(date_str, '%m/%d/%Y').date()
                         amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date]
                     elif len(row[0]) == 10:
                         date_str, desc, precentage, cash, amount_str = row
                         date = dt.strptime(date_str, '%m/%d/%Y').date()
                         amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                        rows[key] = [date, desc, amount, "Apple", account_type, trans_type, bill_date]
 
                 elif "TRANSACTION #" in row[0]:
                     stmt_state = True
@@ -80,7 +80,7 @@ class StatementFilter:
         return rows
 
 
-    def _chase_rows(self, data, account_type, file_date):
+    def _chase_credit(self, data, account_type, file_date):
         rows = dict()
         trans_type = ""
         cursorOn = False
@@ -94,10 +94,16 @@ class StatementFilter:
                 cursorOn = True
             elif cursorOn and 2 < len(row) < 4:
                 raw_date, desc, amount_str = row
-                date_str = raw_date + "/" + str(bill_date.year)
+                raw_date_arr = raw_date.split('/')
+                
+                if raw_date_arr[0] == '12' and bill_date.month == 1:
+                    date_str = raw_date + "/" + str(bill_date.year - 1)
+                else:
+                    date_str = raw_date + "/" + str(bill_date.year)
+                
                 date = dt.strptime(date_str, '%m/%d/%Y').date()
                 amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
-                rows[key] = [date, desc, amount, "Chase", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                rows[key] = [date, desc, amount, "Chase", account_type, trans_type, bill_date]
         return rows
 
 
@@ -116,11 +122,17 @@ class StatementFilter:
                 cursorOn = True
             elif cursorOn and 3 < len(row) < 5:
                 raw_date, desc, amount_str, total_str = row
-                date_str = raw_date + "/" + str(bill_date.year)
+                raw_date_arr = raw_date.split('/')
+                
+                if raw_date_arr[0] == '12' and bill_date.month == 1:
+                    date_str = raw_date + "/" + str(bill_date.year - 1)
+                else:
+                    date_str = raw_date + "/" + str(bill_date.year)
+                
                 date = dt.strptime(date_str, '%m/%d/%Y').date()
                 amount = Decimal(sub(r'[^\d\-.]', '', amount_str))
                 total = Decimal(sub(r'[^\d\-.]', '', total_str))
-                rows[key] = [date, desc, amount, "Chase", account_type, trans_type, bill_date.strftime("%b %y"), date.year]
+                rows[key] = [date, desc, amount, "Chase", account_type, trans_type, bill_date]
         return rows
 
 
@@ -140,10 +152,10 @@ class StatementFilter:
                 raw_data.update(device.get_results())
 
         if card_provider == "Apple":
-            return self._apple_rows(raw_data, account_type, file_date)
+            return self._apple_credit(raw_data, account_type, file_date)
         elif card_provider == "Chase":
             if account_type == "Credit":
-                return self._chase_rows(raw_data, account_type, file_date)
+                return self._chase_credit(raw_data, account_type, file_date)
             elif account_type == "Checkings" or account_type == "Savings":
                 return self._chase_checkings_savings(raw_data, account_type, file_date)
 
